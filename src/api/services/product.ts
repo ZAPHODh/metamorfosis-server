@@ -6,7 +6,6 @@ import { ProductFilterParams, CreateProductDTO, UpdateProductDTO, ProductReview 
  * Listar todos os produtos com filtros
  */
 export async function getProducts(filters: ProductFilterParams) {
-    // Construir a consulta com base nos filtros
     const where: any = {}
 
     if (filters.search) {
@@ -34,7 +33,6 @@ export async function getProducts(filters: ProductFilterParams) {
     }
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-        // Precisamos verificar o preço no JSON para a moeda específica
         if (filters.minPrice !== undefined) {
             where.price = {
                 path: `$."${filters.currency}".value`,
@@ -63,7 +61,6 @@ export async function getProducts(filters: ProductFilterParams) {
         where.rating = { gte: filters.minRating }
     }
 
-    // Filtros para coleções
     if (filters.collections && filters.collections.length > 0) {
         where.collections = {
             some: {
@@ -72,14 +69,12 @@ export async function getProducts(filters: ProductFilterParams) {
         }
     }
 
-    // Filtros para tags
     if (filters.tags && filters.tags.length > 0) {
         where.tags = {
             hasSome: filters.tags,
         }
     }
 
-    // Filtros para materiais
     if (filters.materials && filters.materials.length > 0) {
         where.materials = {
             some: {
@@ -88,7 +83,6 @@ export async function getProducts(filters: ProductFilterParams) {
         }
     }
 
-    // Filtros para gemas
     if (filters.gemstones && filters.gemstones.length > 0) {
         where.gemstones = {
             some: {
@@ -97,11 +91,9 @@ export async function getProducts(filters: ProductFilterParams) {
         }
     }
 
-    // Calcular paginação
     const page = filters.page ?? 1
     const skip = (page - 1) * (filters.limit ?? 10)
 
-    // Definir ordenação
     const orderBy: any = {}
     if (filters.sortBy) {
         orderBy[filters.sortBy] = filters.sortOrder || "asc"
@@ -110,7 +102,6 @@ export async function getProducts(filters: ProductFilterParams) {
     }
 
     try {
-        // Executar a consulta
         const products = await prisma.product.findMany({
             where,
             orderBy,
@@ -134,12 +125,9 @@ export async function getProducts(filters: ProductFilterParams) {
             },
         })
 
-        // Contar o total de produtos para paginação
         const total = await prisma.product.count({ where })
 
-        // Formatar a resposta
         const formattedProducts = products.map((product) => {
-            // Extrair os dados multilíngues e de preço para o idioma e moeda solicitados
             const name = filters.language && (product.name as any)[filters.language] !== undefined
                 ? (product.name as any)[filters.language]
                 : Object.values(product.name as any)[0]
@@ -213,9 +201,6 @@ export async function getProductById(id: string, language: string, currency: str
         if (!product) {
             return null
         }
-
-        // Formatar a resposta
-        // Extrair os dados multilíngues e de preço para o idioma e moeda solicitados
         const name = (product.name as any)[language] || Object.values(product.name as any)[0]
         const description = (product.description as any)[language] || Object.values(product.description as any)[0]
         const shortDescription =
@@ -271,8 +256,6 @@ export async function getProductBySlug(slug: string, language: string, currency:
             return null
         }
 
-        // Formatar a resposta
-        // Extrair os dados multilíngues e de preço para o idioma e moeda solicitados
         const name = (product.name as any)[language] || Object.values(product.name as any)[0]
         const description = (product.description as any)[language] || Object.values(product.description as any)[0]
         const shortDescription =
@@ -349,7 +332,6 @@ export async function createProduct(data: CreateProductDTO) {
                         },
                     })),
                 },
-                // Criar materiais
                 materials: {
                     create: data.materials.map((material) => ({
                         type: material.type,
@@ -358,7 +340,6 @@ export async function createProduct(data: CreateProductDTO) {
                         description: material.description as any,
                     })),
                 },
-                // Criar gemas
                 gemstones: {
                     create: data.gemstones.map((gemstone) => ({
                         type: gemstone.type,
@@ -370,7 +351,6 @@ export async function createProduct(data: CreateProductDTO) {
                         description: gemstone.description as any,
                     })),
                 },
-                // Criar variantes
                 variants:
                     data.hasVariants && data.variants
                         ? {
@@ -393,12 +373,9 @@ export async function createProduct(data: CreateProductDTO) {
     }
 }
 
-/**
- * Atualizar um produto
- */
+
 export async function updateProduct(id: string, data: UpdateProductDTO) {
     try {
-        // Verificar se o produto existe
         const existingProduct = await prisma.product.findUnique({
             where: { id },
             include: {
@@ -413,7 +390,6 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
             return null
         }
 
-        // Verificar se o SKU já existe (se estiver sendo atualizado)
         if (data.sku && data.sku !== existingProduct.sku) {
             const existingSku = await prisma.product.findUnique({
                 where: { sku: data.sku },
@@ -424,7 +400,6 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
             }
         }
 
-        // Verificar se o slug já existe (se estiver sendo atualizado)
         if (data.slug && data.slug !== existingProduct.slug) {
             const existingSlug = await prisma.product.findUnique({
                 where: { slug: data.slug },
@@ -435,14 +410,11 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
             }
         }
 
-        // Atualizar coleções se necessário
         if (data.collections) {
-            // Remover todas as associações existentes
             await prisma.collectionProduct.deleteMany({
                 where: { productId: id },
             })
 
-            // Adicionar novas associações
             for (const collectionId of data.collections) {
                 await prisma.collectionProduct.create({
                     data: {
@@ -452,15 +424,10 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
                 })
             }
         }
-
-        // Atualizar materiais se necessário
         if (data.materials) {
-            // Remover todos os materiais existentes
             await prisma.productMaterial.deleteMany({
                 where: { productId: id },
             })
-
-            // Adicionar novos materiais
             for (const material of data.materials) {
                 await prisma.productMaterial.create({
                     data: {
@@ -474,14 +441,11 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
             }
         }
 
-        // Atualizar gemas se necessário
         if (data.gemstones) {
-            // Remover todas as gemas existentes
             await prisma.productGemstone.deleteMany({
                 where: { productId: id },
             })
 
-            // Adicionar novas gemas
             for (const gemstone of data.gemstones) {
                 await prisma.productGemstone.create({
                     data: {
@@ -498,22 +462,17 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
             }
         }
 
-        // Atualizar variantes se necessário
         if (data.hasVariants !== undefined || data.variants) {
-            // Se hasVariants for false, remover todas as variantes
             if (data.hasVariants === false) {
                 await prisma.productVariant.deleteMany({
                     where: { productId: id },
                 })
             }
-            // Se houver novas variantes, atualizar
             else if (data.variants) {
-                // Remover todas as variantes existentes
                 await prisma.productVariant.deleteMany({
                     where: { productId: id },
                 })
 
-                // Adicionar novas variantes
                 for (const variant of data.variants) {
                     await prisma.productVariant.create({
                         data: {
@@ -529,15 +488,11 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
             }
         }
 
-        // Remover campos que serão tratados separadamente
         const { collections, materials, gemstones, variants, ...updateData } = data
-
-        // Atualizar o status com base no estoque, se o estoque estiver sendo atualizado
         if (updateData.stock !== undefined) {
             (updateData as any).status = updateData.stock > 0 ? "IN_STOCK" : "OUT_OF_STOCK"
         }
 
-        // Atualizar o produto
         const updatedProduct = await prisma.product.update({
             where: { id },
             data: updateData as any,
@@ -558,8 +513,6 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
                 variants: true,
             },
         })
-
-        // Formatar a resposta
         return {
             ...updatedProduct,
             collections: updatedProduct.collections.map((cp) => cp.collection.id),
@@ -570,12 +523,8 @@ export async function updateProduct(id: string, data: UpdateProductDTO) {
     }
 }
 
-/**
- * Excluir um produto
- */
 export async function deleteProduct(id: string) {
     try {
-        // Verificar se o produto existe
         const existingProduct = await prisma.product.findUnique({
             where: { id },
         })
@@ -584,7 +533,7 @@ export async function deleteProduct(id: string) {
             return false
         }
 
-        // Excluir o produto
+
         await prisma.product.delete({
             where: { id },
         })
@@ -596,9 +545,6 @@ export async function deleteProduct(id: string) {
     }
 }
 
-/**
- * Obter avaliações de um produto
- */
 export async function getProductReviews(
     productId: string,
     page: number,
@@ -607,7 +553,6 @@ export async function getProductReviews(
     sortOrder: string,
 ) {
     try {
-        // Verificar se o produto existe
         const product = await prisma.product.findUnique({
             where: { id: productId },
             select: { id: true },
@@ -617,22 +562,16 @@ export async function getProductReviews(
             return null
         }
 
-        // Calcular paginação
         const skip = (page - 1) * limit
 
-        // Definir ordenação
         const orderBy: any = {}
         orderBy[sortBy] = sortOrder
-
-        // Buscar avaliações
         const reviews = await prisma.productReview.findMany({
             where: { productId },
             orderBy,
             skip,
             take: limit,
         })
-
-        // Contar o total de avaliações para paginação
         const total = await prisma.productReview.count({ where: { productId } })
 
         return {
@@ -650,12 +589,9 @@ export async function getProductReviews(
     }
 }
 
-/**
- * Adicionar uma avaliação a um produto
- */
+
 export async function addProductReview(productId: string, data: ProductReview) {
     try {
-        // Verificar se o produto existe
         const product = await prisma.product.findUnique({
             where: { id: productId },
         })
@@ -664,7 +600,6 @@ export async function addProductReview(productId: string, data: ProductReview) {
             return null
         }
 
-        // Criar a avaliação
         const review = await prisma.productReview.create({
             data: {
                 productId,
@@ -676,8 +611,6 @@ export async function addProductReview(productId: string, data: ProductReview) {
                 verified: data.verified || false,
             },
         })
-
-        // Atualizar a média de avaliações e o contador de avaliações do produto
         const allReviews = await prisma.productReview.findMany({
             where: { productId },
             select: { rating: true },
@@ -693,7 +626,6 @@ export async function addProductReview(productId: string, data: ProductReview) {
                 reviewCount: allReviews.length,
             },
         })
-
         return review
     } catch (error) {
         console.error(`Erro ao adicionar avaliação ao produto ${productId}:`, error)
@@ -701,12 +633,8 @@ export async function addProductReview(productId: string, data: ProductReview) {
     }
 }
 
-/**
- * Incrementar a contagem de visualizações de um produto
- */
 export async function incrementProductView(id: string) {
     try {
-        // Verificar se o produto existe
         const product = await prisma.product.findUnique({
             where: { id },
             select: { id: true, viewCount: true },
@@ -716,7 +644,6 @@ export async function incrementProductView(id: string) {
             return false
         }
 
-        // Incrementar a contagem de visualizações
         await prisma.product.update({
             where: { id },
             data: {
@@ -725,7 +652,6 @@ export async function incrementProductView(id: string) {
                 },
             },
         })
-
         return true
     } catch (error) {
         console.error(`Erro ao incrementar visualização do produto ${id}:`, error)

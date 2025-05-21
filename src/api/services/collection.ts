@@ -24,12 +24,10 @@ export async function getCollections(filters: CollectionFilterParams) {
             where.active = filters.active
         }
 
-        // Calcular paginação
         const page = filters.page ?? 1
         const limit = filters.limit ?? 10
         const skip = (page - 1) * limit
 
-        // Definir ordenação
         const orderBy: any = {}
         if (filters.sortBy) {
             orderBy[filters.sortBy] = filters.sortOrder || "asc"
@@ -51,7 +49,6 @@ export async function getCollections(filters: CollectionFilterParams) {
             },
         })
 
-        // Contar o total de coleções para paginação
         const total = await prisma.collection.count({ where })
 
         return {
@@ -69,9 +66,6 @@ export async function getCollections(filters: CollectionFilterParams) {
     }
 }
 
-/**
- * Obter uma coleção pelo ID
- */
 export async function getCollectionById(id: string) {
     try {
         const collection = await prisma.collection.findUnique({
@@ -92,9 +86,6 @@ export async function getCollectionById(id: string) {
     }
 }
 
-/**
- * Obter uma coleção pelo slug
- */
 export async function getCollectionBySlug(slug: string) {
     try {
         const collection = await prisma.collection.findUnique({
@@ -115,9 +106,7 @@ export async function getCollectionBySlug(slug: string) {
     }
 }
 
-/**
- * Obter produtos de uma coleção
- */
+
 export async function getCollectionProducts(
     id: string,
     page: number,
@@ -128,7 +117,6 @@ export async function getCollectionProducts(
     currency: string,
 ) {
     try {
-        // Verificar se a coleção existe
         const collection = await prisma.collection.findUnique({
             where: { id },
             select: { id: true },
@@ -137,19 +125,13 @@ export async function getCollectionProducts(
         if (!collection) {
             return null
         }
-
-        // Calcular paginação
         const skip = (page - 1) * limit
-
-        // Definir ordenação
         const orderBy: any = {}
         if (sortBy) {
             orderBy[sortBy] = sortOrder || "asc"
         } else {
             orderBy.createdAt = "desc"
         }
-
-        // Buscar produtos da coleção
         const products = await prisma.product.findMany({
             where: {
                 collections: {
@@ -167,8 +149,6 @@ export async function getCollectionProducts(
                 variants: true,
             },
         })
-
-        // Contar o total de produtos para paginação
         const total = await prisma.product.count({
             where: {
                 collections: {
@@ -179,9 +159,7 @@ export async function getCollectionProducts(
             },
         })
 
-        // Formatar a resposta
         const formattedProducts = products.map((product) => {
-            // Extrair os dados multilíngues e de preço para o idioma e moeda solicitados
             const name = (product.name as any)[language] || Object.values(product.name as any)[0]
             const description = (product.description as any)[language] || Object.values(product.description as any)[0]
             const shortDescription =
@@ -212,28 +190,20 @@ export async function getCollectionProducts(
     }
 }
 
-/**
- * Criar uma nova coleção
- */
 export async function createCollection(data: CreateCollectionDTO) {
     try {
-        // Validar dados
         if (!data.name || !data.description) {
             throw new Error("Nome e descrição são obrigatórios")
         }
-
-        // Verificar se o slug já existe
         if (data.slug) {
             const existingSlug = await prisma.collection.findUnique({
                 where: { slug: data.slug },
             })
-
             if (existingSlug) {
                 throw new Error("Slug já existe")
             }
         }
 
-        // Criar a coleção
         const collection = await prisma.collection.create({
             data: {
                 name: data.name,
@@ -254,12 +224,8 @@ export async function createCollection(data: CreateCollectionDTO) {
     }
 }
 
-/**
- * Atualizar uma coleção
- */
 export async function updateCollection(id: string, data: UpdateCollectionDTO) {
     try {
-        // Verificar se a coleção existe
         const existingCollection = await prisma.collection.findUnique({
             where: { id },
         })
@@ -268,7 +234,6 @@ export async function updateCollection(id: string, data: UpdateCollectionDTO) {
             return null
         }
 
-        // Verificar se o slug já existe (se estiver sendo atualizado)
         if (data.slug && data.slug !== existingCollection.slug) {
             const existingSlug = await prisma.collection.findUnique({
                 where: { slug: data.slug },
@@ -279,7 +244,6 @@ export async function updateCollection(id: string, data: UpdateCollectionDTO) {
             }
         }
 
-        // Atualizar a coleção
         const updatedCollection = await prisma.collection.update({
             where: { id },
             data: {
@@ -301,12 +265,9 @@ export async function updateCollection(id: string, data: UpdateCollectionDTO) {
     }
 }
 
-/**
- * Excluir uma coleção
- */
+
 export async function deleteCollection(id: string) {
     try {
-        // Verificar se a coleção existe
         const existingCollection = await prisma.collection.findUnique({
             where: { id },
         })
@@ -315,7 +276,6 @@ export async function deleteCollection(id: string) {
             return false
         }
 
-        // Excluir a coleção
         await prisma.collection.delete({
             where: { id },
         })
@@ -327,12 +287,8 @@ export async function deleteCollection(id: string) {
     }
 }
 
-/**
- * Adicionar produtos a uma coleção
- */
 export async function addProductsToCollection(id: string, productIds: string[]) {
     try {
-        // Verificar se a coleção existe
         const existingCollection = await prisma.collection.findUnique({
             where: { id },
         })
@@ -341,11 +297,9 @@ export async function addProductsToCollection(id: string, productIds: string[]) 
             return null
         }
 
-        // Adicionar produtos à coleção
         const results = await Promise.all(
             productIds.map(async (productId) => {
                 try {
-                    // Verificar se o produto existe
                     const product = await prisma.product.findUnique({
                         where: { id: productId },
                         select: { id: true },
@@ -355,7 +309,6 @@ export async function addProductsToCollection(id: string, productIds: string[]) 
                         return { productId, success: false, error: "Produto não encontrado" }
                     }
 
-                    // Verificar se o produto já está na coleção
                     const existingRelation = await prisma.collectionProduct.findFirst({
                         where: {
                             collectionId: id,
@@ -367,14 +320,12 @@ export async function addProductsToCollection(id: string, productIds: string[]) 
                         return { productId, success: false, error: "Produto já está na coleção" }
                     }
 
-                    // Adicionar produto à coleção
                     await prisma.collectionProduct.create({
                         data: {
                             collectionId: id,
                             productId,
                         },
                     })
-
                     return { productId, success: true }
                 } catch (error) {
                     console.error(`Erro ao adicionar produto ${productId} à coleção:`, error)
@@ -394,12 +345,9 @@ export async function addProductsToCollection(id: string, productIds: string[]) 
     }
 }
 
-/**
- * Remover produtos de uma coleção
- */
+
 export async function removeProductsFromCollection(id: string, productIds: string[]) {
     try {
-        // Verificar se a coleção existe
         const existingCollection = await prisma.collection.findUnique({
             where: { id },
         })
@@ -408,7 +356,6 @@ export async function removeProductsFromCollection(id: string, productIds: strin
             return null
         }
 
-        // Remover produtos da coleção
         await prisma.collectionProduct.deleteMany({
             where: {
                 collectionId: id,
@@ -429,7 +376,6 @@ export async function removeProductsFromCollection(id: string, productIds: strin
     }
 }
 
-// Exportar todas as funções como um objeto
 export const collectionService = {
     getCollections,
     getCollectionById,

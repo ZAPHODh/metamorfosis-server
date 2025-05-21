@@ -1,6 +1,3 @@
-import type { Request, Response } from "express"
-
-
 import { asyncHandler } from "../../helper"
 import collectionService from "../services/collection"
 import { CollectionFilterParams } from "../../interfaces"
@@ -8,8 +5,7 @@ import { CollectionFilterParams } from "../../interfaces"
 
 
 export const collectionController = {
-
-    getCollections: asyncHandler(async (req: Request, res: Response) => {
+    getCollections: asyncHandler(async (req, res) => {
         const filters: CollectionFilterParams = {
             search: req.query.search as string,
             featured: req.query.featured === "true" ? true : req.query.featured === "false" ? false : undefined,
@@ -22,7 +18,7 @@ export const collectionController = {
         const result = await collectionService.getCollections(filters)
         res.json(result)
     }),
-    getCollectionById: asyncHandler(async (req: Request, res: Response) => {
+    getCollectionById: asyncHandler(async (req, res) => {
         const id = req.params.id
 
         const collection = await collectionService.getCollectionById(id)
@@ -36,7 +32,7 @@ export const collectionController = {
     }),
 
 
-    getCollectionBySlug: asyncHandler(async (req: Request, res: Response) => {
+    getCollectionBySlug: asyncHandler(async (req, res) => {
         const slug = req.params.slug
 
         const collection = await collectionService.getCollectionBySlug(slug)
@@ -49,7 +45,7 @@ export const collectionController = {
         res.json(collection)
     }),
 
-    getCollectionProducts: asyncHandler(async (req: Request, res: Response) => {
+    getCollectionProducts: asyncHandler(async (req, res) => {
         const id = req.params.id
         const page = req.query.page ? Number(req.query.page) : 1
         const limit = req.query.limit ? Number(req.query.limit) : 10
@@ -68,14 +64,14 @@ export const collectionController = {
         res.json(result)
     }),
 
-    createCollection: asyncHandler(async (req: Request, res: Response) => {
+    createCollection: asyncHandler(async (req, res) => {
         const data = req.body
 
         const collection = await collectionService.createCollection(data)
         res.status(201).json(collection)
     }),
 
-    updateCollection: asyncHandler(async (req: Request, res: Response) => {
+    updateCollection: asyncHandler(async (req, res) => {
         const id = req.params.id
         const data = req.body
 
@@ -88,8 +84,7 @@ export const collectionController = {
 
         res.json(collection)
     }),
-
-    deleteCollection: asyncHandler(async (req: Request, res: Response) => {
+    deleteCollection: asyncHandler(async (req, res) => {
         const id = req.params.id
 
         const success = await collectionService.deleteCollection(id)
@@ -101,7 +96,7 @@ export const collectionController = {
 
         res.json({ success: true })
     }),
-    addProductsToCollection: asyncHandler(async (req: Request, res: Response) => {
+    addProductsToCollection: asyncHandler(async (req, res) => {
         const id = req.params.id
         const { productIds } = req.body
 
@@ -119,7 +114,7 @@ export const collectionController = {
 
         res.json(result)
     }),
-    removeProductsFromCollection: asyncHandler(async (req: Request, res: Response) => {
+    removeProductsFromCollection: asyncHandler(async (req, res) => {
         const id = req.params.id
         const { productIds } = req.body
 
@@ -127,14 +122,11 @@ export const collectionController = {
             res.status(400).json({ error: "Lista de IDs de produtos é obrigatória" })
             return
         }
-
         const result = await collectionService.removeProductsFromCollection(id, productIds)
-
         if (!result) {
             res.status(404).json({ error: "Coleção não encontrada" })
             return
         }
-
         res.json(result)
     }),
 }

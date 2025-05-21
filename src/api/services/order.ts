@@ -3,9 +3,6 @@ import { v4 as uuidv4 } from "uuid"
 import { prisma } from "../../../prisma/prisma"
 import { OrderFilters, OrderInput, OrderStatusUpdate } from "../../interfaces"
 
-
-
-
 const orderService = {
     getOrders: async (filters: OrderFilters) => {
         const { search, status, startDate, endDate, sortBy, sortOrder, page, limit } = filters

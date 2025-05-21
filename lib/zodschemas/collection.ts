@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-// Schema para criação de coleção
 const baseCollectionSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório"),
     description: z.string().min(1, "Descrição é obrigatória"),
@@ -26,10 +25,9 @@ export const createCollectionSchema = baseCollectionSchema.refine(
     }
 );
 
-// Schema para atualização de coleção
+
 export const updateCollectionSchema = baseCollectionSchema.partial();
 
-// Schema para filtros de coleção
 export const collectionFilterSchema = z.object({
     search: z.string().optional(),
     featured: z.boolean().optional(),
@@ -41,12 +39,11 @@ export const collectionFilterSchema = z.object({
     limit: z.number().min(1).max(100).optional(),
 })
 
-// Schema para adicionar produtos a uma coleção
+
 export const addProductsToCollectionSchema = z.object({
     productIds: z.array(z.string()).min(1, "Pelo menos um produto é obrigatório"),
 })
 
-// Schema para remover produtos de uma coleção
 export const removeProductsFromCollectionSchema = z.object({
     productIds: z.array(z.string()).min(1, "Pelo menos um produto é obrigatório"),
 })

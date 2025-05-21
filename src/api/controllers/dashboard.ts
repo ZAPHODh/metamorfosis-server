@@ -1,10 +1,8 @@
 
 import { asyncHandler } from "../../helper"
+import dashboardService from "../services/dashboard"
 
 export const dashboardController = {
-    /**
-     * Obter estatísticas gerais do dashboard
-     */
     getStats: asyncHandler(async (req, res) => {
         const startDate = req.query.startDate as string
         const endDate = req.query.endDate as string
@@ -13,9 +11,6 @@ export const dashboardController = {
         res.json(stats)
     }),
 
-    /**
-     * Obter dados de vendas para o dashboard
-     */
     getSales: asyncHandler(async (req, res) => {
         const startDate = req.query.startDate as string
         const endDate = req.query.endDate as string
@@ -25,19 +20,12 @@ export const dashboardController = {
         res.json(sales)
     }),
 
-    /**
-     * Obter status do inventário para o dashboard
-     */
     getInventory: asyncHandler(async (req, res) => {
         const lowStockOnly = req.query.lowStockOnly === "true"
 
         const inventory = await dashboardService.getInventory(lowStockOnly)
         res.json(inventory)
     }),
-
-    /**
-     * Obter estatísticas de clientes para o dashboard
-     */
     getCustomerStats: asyncHandler(async (req, res) => {
         const startDate = req.query.startDate as string
         const endDate = req.query.endDate as string
@@ -45,10 +33,6 @@ export const dashboardController = {
         const customerStats = await dashboardService.getCustomerStats(startDate, endDate)
         res.json(customerStats)
     }),
-
-    /**
-     * Obter dados financeiros para o dashboard
-     */
     getFinances: asyncHandler(async (req, res) => {
         const startDate = req.query.startDate as string
         const endDate = req.query.endDate as string

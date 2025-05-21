@@ -1,20 +1,20 @@
 import { z } from "zod"
 
-// Schema para dimensões do produto
+
 const dimensionsSchema = z.object({
     length: z.number().optional(),
     width: z.number().optional(),
     height: z.number().optional(),
 })
 
-// Schema para SEO do produto
+
 const seoSchema = z.object({
     title: z.string().optional(),
     description: z.string().optional(),
     keywords: z.array(z.string()).optional(),
 })
 
-// Schema para material do produto
+
 const materialSchema = z.object({
     type: z.string(),
     color: z.string().optional(),
@@ -22,7 +22,6 @@ const materialSchema = z.object({
     description: z.record(z.string(), z.string()).optional(),
 })
 
-// Schema para gema do produto
 const gemstoneSchema = z.object({
     type: z.string(),
     carat: z.number().optional(),
@@ -33,7 +32,6 @@ const gemstoneSchema = z.object({
     description: z.record(z.string(), z.string()).optional(),
 })
 
-// Schema para variante do produto
 const variantSchema = z.object({
     sku: z.string().regex(/^[A-Za-z0-9-_]+$/, "SKU inválido"),
     attributes: z.record(z.string(), z.string()),
@@ -48,7 +46,6 @@ const variantSchema = z.object({
     images: z.array(z.string().url()),
 })
 
-// Schema base para criação de produto (sem refine)
 const baseProductSchema = z.object({
     name: z.record(z.string(), z.string()),
     sku: z.string().regex(/^[A-Za-z0-9-_]+$/, "SKU inválido"),
@@ -121,7 +118,7 @@ export const updateProductSchema = baseProductSchema.partial().extend({
     }
 );
 
-// Schema para filtros de produto
+
 export const productFilterSchema = z.object({
     search: z.string().optional(),
     category: z.string().optional(),
@@ -145,7 +142,7 @@ export const productFilterSchema = z.object({
     currency: z.string().optional(),
 })
 
-// Schema para avaliação de produto
+
 export const productReviewSchema = z.object({
     userId: z.string(),
     userName: z.string(),

@@ -57,7 +57,6 @@ export const authController = {
             const {
                 email, password
             } = req.body;
-            // 1. Add extra validation on the body payload and user existence
             const sanitizedEmail: string = email.toLowerCase();
             const user = await prisma.user.findFirst({
                 where: { email: sanitizedEmail }
@@ -74,9 +73,6 @@ export const authController = {
                 return;
             }
 
-            // 2. return the session object.
-            // Could generate a new token upon login if needed
-            // Could add extra information, e.g. roles, ...
             res.json({
                 email: sanitizedEmail,
                 accessToken: user.accessToken,

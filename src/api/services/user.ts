@@ -1,5 +1,4 @@
 import { PrismaClient, type UserRole, type UserStatus } from "@prisma/client"
-import bcrypt from "bcryptjs"
 import { prisma } from "../../../prisma/prisma"
 
 export interface UserCreateDTO {
@@ -49,8 +48,6 @@ export class UserService {
     }) {
         try {
             const { search, role, status, sortBy = "name", sortOrder = "asc", page = 1, limit = 10 } = filters
-
-            // Construir filtros
             const where: any = {}
 
             if (search) {
@@ -147,67 +144,10 @@ export class UserService {
     }
 
     /**
-     * Cria um novo usuário
-     */
-    async createUser(data: UserCreateDTO) {
-        try {
-            // Verificar se já existe um usuário com o mesmo email
-            const existingUser = await this.prisma.user.findUnique({
-                where: { email: data.email },
-            })
-
-            if (existingUser) {
-                throw new Error("Email já cadastrado")
-            }
-
-            // Hash da senha
-            const passwordHash = await bcrypt.hash(data.password, 10)
-
-            // Criar usuário
-            const user = await this.prisma.user.create({
-                data: {
-                    name: data.name,
-                    email: data.email,
-                    passwordHash,
-                    role: data.role,
-                    phone: data.phone,
-                    document: data.document,
-                    birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
-                    department: data.department,
-                    permissions: data.permissions || [],
-                    startDate: data.role !== "CUSTOMER" ? new Date() : undefined,
-                    status: "ACTIVE",
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    phone: true,
-                    document: true,
-                    birthDate: true,
-                    role: true,
-                    department: true,
-                    status: true,
-                    startDate: true,
-                    permissions: true,
-                    createdAt: true,
-                    updatedAt: true,
-                },
-            })
-
-            return user
-        } catch (error) {
-            console.error("Erro ao criar usuário:", error)
-            throw error
-        }
-    }
-
-    /**
      * Atualiza um usuário
      */
     async updateUser(id: string, data: UserUpdateDTO) {
         try {
-            // Verificar se o usuário existe
             const user = await this.prisma.user.findUnique({
                 where: { id },
             })
@@ -215,8 +155,6 @@ export class UserService {
             if (!user) {
                 return null
             }
-
-            // Verificar se o email já está em uso por outro usuário
             if (data.email && data.email !== user.email) {
                 const existingUser = await this.prisma.user.findUnique({
                     where: { email: data.email },
@@ -227,7 +165,6 @@ export class UserService {
                 }
             }
 
-            // Atualizar usuário
             const updatedUser = await this.prisma.user.update({
                 where: { id },
                 data: {
@@ -274,7 +211,6 @@ export class UserService {
      */
     async deactivateUser(id: string) {
         try {
-            // Verificar se o usuário existe
             const user = await this.prisma.user.findUnique({
                 where: { id },
             })
@@ -283,7 +219,6 @@ export class UserService {
                 return false
             }
 
-            // Desativar usuário
             await this.prisma.user.update({
                 where: { id },
                 data: {
@@ -304,7 +239,6 @@ export class UserService {
      */
     async getUserPerformance(id: string, startDate?: string, endDate?: string) {
         try {
-            // Verificar se o usuário existe e é um funcionário
             const user = await this.prisma.user.findUnique({
                 where: {
                     id,
@@ -318,11 +252,8 @@ export class UserService {
                 return null
             }
 
-            // Converter datas
             const start = startDate ? new Date(startDate) : new Date(new Date().setMonth(new Date().getMonth() - 1))
             const end = endDate ? new Date(endDate) : new Date()
-
-            // Buscar vendas do funcionário
             const sales = await this.prisma.order.findMany({
                 where: {
                     createdById: id,
@@ -339,7 +270,6 @@ export class UserService {
                 },
             })
 
-            // Buscar tickets de suporte atendidos
             const supportTickets = await this.prisma.supportTicket.findMany({
                 where: {
                     assignedToId: id,
@@ -357,7 +287,6 @@ export class UserService {
                 },
             })
 
-            // Calcular métricas
             const totalSales = sales.length
             const totalRevenue = sales.reduce((sum, sale) => sum + Number(sale.total), 0)
             const totalTickets = supportTickets.length

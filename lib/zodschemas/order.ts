@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { OrderStatus, PaymentMethod } from "../../src/interfaces"
 
-// Schema para item do pedido
+
 const orderItemSchema = z.object({
     productId: z.string(),
     quantity: z.number().min(1),
@@ -9,7 +9,7 @@ const orderItemSchema = z.object({
     discount: z.number().min(0),
 })
 
-// Schema para endereço simplificado (sem tipo e customerId)
+
 const simpleAddressSchema = z.object({
     street: z.string().min(1, "Rua é obrigatória"),
     number: z.string().min(1, "Número é obrigatório"),
@@ -21,7 +21,7 @@ const simpleAddressSchema = z.object({
     country: z.string().min(1, "País é obrigatório"),
 })
 
-// Schema para criação de pedido
+
 export const createOrderSchema = z.object({
     customerId: z.string(),
     items: z.array(orderItemSchema).min(1, "Pelo menos um item é obrigatório"),
@@ -33,7 +33,7 @@ export const createOrderSchema = z.object({
     discountTotal: z.number().min(0),
 })
 
-// Schema para atualização de pedido
+
 export const updateOrderSchema = z.object({
     status: z.nativeEnum(OrderStatus).optional(),
     paymentStatus: z.enum(["PENDING", "PAID", "REFUNDED", "FAILED"]).optional(),
@@ -43,7 +43,7 @@ export const updateOrderSchema = z.object({
     notes: z.string().optional(),
 })
 
-// Schema para filtros de pedido
+
 export const orderFilterSchema = z.object({
     search: z.string().optional(),
     customerId: z.string().optional(),
