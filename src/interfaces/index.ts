@@ -361,7 +361,7 @@ export interface CreateCustomerDTO {
     addresses: Omit<Address, "id" | "createdAt" | "updatedAt" | "customerId">[]
     notes?: string
     marketingConsent: boolean
-    password?: string // Apenas para criação
+    password?: string
     avatar?: string
 }
 
@@ -467,7 +467,7 @@ export interface OrderFilterParams {
     limit?: number
 }
 
-// Funcionários
+
 export interface CreateEmployeeDTO {
     name: string
     email: string
@@ -499,7 +499,7 @@ export interface EmployeeFilterParams {
     limit?: number
 }
 
-// Tickets de Suporte
+
 export interface CreateSupportTicketDTO {
     subject: string
     customerId: string
