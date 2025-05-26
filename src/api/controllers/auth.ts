@@ -8,9 +8,6 @@ import { asyncHandler } from '../../helper';
 import { prisma } from '../../../prisma/prisma';
 import { signupSchema } from '../../../lib/zodschemas/user';
 
-
-
-
 export const authController = {
     signup: asyncHandler(async (req, res) => {
         const user: Partial<User> = req.body;
@@ -39,8 +36,6 @@ export const authController = {
                 accessToken
             }
         });
-
-
         res.json({
             accessToken: accessToken,
             email: sanitizedEmail,

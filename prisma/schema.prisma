@@ -501,7 +501,7 @@ model SupportMessage {
 
 model StoreSettings {
   id                   String   @id @default(cuid())
-  storeName            Json // Record<string, string>
+  storeName            String // Record<string, string>
   storeDescription     Json? // Record<string, string>
   logo                 String?
   address              Json?

@@ -231,45 +231,20 @@ export interface SupportMessage extends BaseEntity {
 }
 
 // Configurações da Loja
-export interface StoreSettings extends BaseEntity {
-    storeName: string
-    storeDescription?: string
-    logo?: string
-    address?: Address
-    phone?: string
-    email?: string
-    socialMedia?: {
-        facebook?: string
-        instagram?: string
-        twitter?: string
-        youtube?: string
-        tiktok?: string
-    }
-    businessHours?: {
-        monday?: string
-        tuesday?: string
-        wednesday?: string
-        thursday?: string
-        friday?: string
-        saturday?: string
-        sunday?: string
-    }
-    taxSettings?: {
-        taxRate: number
-        includeTaxInPrice: boolean
-    }
-    shippingSettings?: {
-        freeShippingThreshold?: number
-        defaultShippingCost: number
-    }
-    notificationSettings?: {
-        salesNotifications: boolean
-        stockNotifications: boolean
-        customerNotifications: boolean
-        marketingNotifications: boolean
-    }
+export interface CreateStoreSettingsDto {
+    storeName: string;
+    storeDescription?: Record<string, string>;
+    logo?: string;
+    address?: Record<string, any>;
+    phone?: string;
+    email?: string;
+    socialMedia?: Record<string, any>;
+    businessHours?: Record<string, any>;
+    taxSettings?: Record<string, any>;
+    shippingSettings?: Record<string, any>;
+    notificationSettings?: Record<string, any>;
 }
-
+export interface UpdateStoreSettingsDto extends Partial<CreateStoreSettingsDto> { }
 // Interfaces para requisições e respostas da API
 
 // Produtos
