@@ -48,6 +48,7 @@ export class UserService {
     }) {
         try {
             const { search, role, status, sortBy = "name", sortOrder = "asc", page = 1, limit = 10 } = filters
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const where: any = {}
 
             if (search) {

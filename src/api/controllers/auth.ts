@@ -43,7 +43,8 @@ export const authController = {
                 id: createduser.id,
                 name: createduser.name,
                 emailVerified: createduser.emailVerified,
-                avatar: createduser.avatar
+                avatar: createduser.avatar,
+                role:createduser.role
             },
         });
     }),
